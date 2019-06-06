@@ -13,7 +13,13 @@ DISCOUNT = 0.95
 EPISODES = 25000
 
 UPDATES_EPISODE = 2000
+EPSILON = 0.5
 
+START_EPS_DECAY = 1
+# // so there is no float 
+END_EPS_DECAY = EPISODES // 2
+
+eps_decay_value = EPSILON / (END_EPS_DECAY - START_EPS_DECAY)
 
 DISCRETE_OS_SIZE = [20] * len(env.observation_space.high)
 DISCRETE_OS_WIN_SIZE = (env.observation_space.high - env.observation_space.low) / DISCRETE_OS_SIZE
@@ -69,16 +75,19 @@ for episode in range (EPISODES):
 
 			# Q Learning from wikipedia formula 
 			# Back properation depends on DISCOUNT * max_future_q
-			new_q = (1 - LEARNING_RATE) * current_q + LEARNING_RATE + (reward + DISCOUNT * max_future_q)
+			new_q = (1 - LEARNING_RATE) * current_q + LEARNING_RATE * (reward + DISCOUNT * max_future_q)
 
 			# Update the action 
+
 			q_table[discrete_state+(action, )] = new_q
 
 		elif new_state[0] >= env.goal_position:
+
+			#print(f"We made it on try {episode}")
 			q_table[discrete_state + (action, )] = 0
 
-
 		discrete_state = new_discrete_state
+	if END_EPS_DECAY >= episode >= START_EPS_DECAY:
+		EPSILON -= eps_decay_value
 
 env.close()
-
