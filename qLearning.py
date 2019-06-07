@@ -10,9 +10,9 @@ env.reset()
 
 LEARNING_RATE = 0.1
 DISCOUNT = 0.95
-EPISODES = 25000
+EPISODES = 2000
 
-UPDATES_EPISODE = 2000
+UPDATES_EPISODE = 500
 EPSILON = 0.5
 
 START_EPS_DECAY = 1
@@ -28,6 +28,9 @@ DISCRETE_OS_WIN_SIZE = (env.observation_space.high - env.observation_space.low) 
 
 q_table = np.random.uniform(low=-2, high=0, size=(DISCRETE_OS_SIZE + [env.action_space.n]))
 
+ep_rewards = []
+
+aggr_ep_rewards = {'ep': [], 'avg': [], 'min': [], 'max': []}
 
 def get_discrete_state(state):
 	## current state - enviroment / space size  
@@ -54,6 +57,7 @@ print(np.argmax(q_table[discrete_state]))
 ## Iterate over many many times 
 
 for episode in range (EPISODES):
+	episode_reward = 0
 	if episode % UPDATES_EPISODE == 0:
 		render = True
 	else:
@@ -61,8 +65,14 @@ for episode in range (EPISODES):
 	discrete_state = get_discrete_state(env.reset())
 	done = False
 	while not done:
-		action = np.argmax(q_table[discrete_state])
+
+		if np.random.random() > EPSILON:
+			action = np.argmax(q_table[discrete_state])
+		else:
+			action = np.random.randint(0, env.action_space.n)
+
 		new_state, reward, done, _ = env.step(action)
+		episode_reward += reward
 		#use for new formulation of q values
 		new_discrete_state = get_discrete_state(new_state)
 		if render:
@@ -90,4 +100,22 @@ for episode in range (EPISODES):
 	if END_EPS_DECAY >= episode >= START_EPS_DECAY:
 		EPSILON -= eps_decay_value
 
+	# total rewards at the end
+	ep_rewards.append(episode_reward)
+
+	# if epside % UPDATES_EPISODE == 0	
+	if not episode % UPDATES_EPISODE:
+		average_reward = sum(ep_rewards[-UPDATES_EPISODE:])/len(ep_rewards[-UPDATES_EPISODE:])
+		aggr_ep_rewards['ep'].append(episode)
+		aggr_ep_rewards['avg'].append(average_reward)
+		aggr_ep_rewards['min'].append(min(ep_rewards[-UPDATES_EPISODE:]))
+		aggr_ep_rewards['max'].append(max(ep_rewards[-UPDATES_EPISODE:]))
+		print(f"Episode: {episode:>5d}, average reward: {average_reward:>4.1f}, current epsilon: {epsilon:>1.2f}")
+
 env.close()
+
+plt.plot(aggr_ep_rewards['ep'], aggr_ep_rewards['avg'], label="average rewards")
+plt.plot(aggr_ep_rewards['ep'], aggr_ep_rewards['max'], label="max rewards")
+plt.plot(aggr_ep_rewards['ep'], aggr_ep_rewards['min'], label="min rewards")
+plt.legend(loc=4)
+plt.show()
