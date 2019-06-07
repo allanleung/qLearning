@@ -1,11 +1,11 @@
 # qLearning
-Q Learning using Gym. Just building on top of what I learned in ML and AI Class.
+Q-Learning using Gym. Just building on top of what I learned in ML and AI Class. Trying to teach the car go up the hill.
 
 Req packages
 
-gym
-numpy
-matplotlib
+*gym
+*numpy
+*matplotlib
 
 
-[I'm an inline-style link with title](https://www.google.com "Google's Homepage")
+[Q-Learning Wikipedia Entry](https://en.wikipedia.org/wiki/Q-learning "Wikipedia Q Learning")
